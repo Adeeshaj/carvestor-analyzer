@@ -3,6 +3,7 @@ import logging
 import sys
 from dotenv import load_dotenv
 import os
+from services.preprocess import preprocess
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -22,6 +23,10 @@ try:
     rows = cur.fetchall()
 
     logging.info(f"Read {len(rows)} listings from database")
+
+    #get preprocessed df
+    listings_df = preprocess(rows)
+
 
 except Exception as e:
     logging.exception(e)
