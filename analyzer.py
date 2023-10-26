@@ -11,14 +11,16 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='%(asctime)s -
 load_dotenv()
 
 DB_URL =  os.environ.get("PSQL_DB_URL")
-table_name="listings"
+listings_table="listings"
+processed_listings_table = "processed_listings"
+
 
 
 try:
     conn = psycopg2.connect(DB_URL)
     cur = conn.cursor()
 
-    query = f"SELECT * FROM {table_name}"
+    query = f"SELECT * FROM {listings_table}"
     cur.execute(query)
     rows = cur.fetchall()
 
@@ -26,7 +28,18 @@ try:
 
     #get preprocessed df
     listings_df = preprocess(rows)
+    listings = listings_df.to_dict(orient='records')
+    for listing in listings:
+        # Insert data from each dictionary into the database
+        columns = ', '.join(listing.keys())
+        values = ', '.join(['%s' for _ in listing])
+        insert_query = f"INSERT INTO {processed_listings_table} ({columns}) VALUES ({values})"
+        cur.execute(insert_query, list(listing.values()))
 
+    # Commit the transaction after inserting all the data
+    conn.commit()
+
+    logging.info("Data inserted successfully.")
 
 except Exception as e:
     logging.exception(e)
