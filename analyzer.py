@@ -34,7 +34,11 @@ try:
         columns = ', '.join(listing.keys())
         values = ', '.join(['%s' for _ in listing])
         insert_query = f"INSERT INTO {processed_listings_table} ({columns}) VALUES ({values})"
-        cur.execute(insert_query, list(listing.values()))
+        try:
+            cur.execute(insert_query, list(listing.values()))
+        except Exception as e:
+            logging.error(str(e))
+
 
     # Commit the transaction after inserting all the data
     conn.commit()
