@@ -9,6 +9,8 @@ def preprocess(data):
     listings = listings.loc[:,['listing_url','price', 'price_currency', 'brand', 'model', 'mileage', 'body_type', 'condition', 'fuel_type', 'transmission', 'engine_capacity', 'year_of_manufacture', 'trim_edition', 'listing_date', 'scraped_date']]
     listings = listings.drop_duplicates('listing_url')
     listings['listing_date'] = listings['listing_date'].apply(convert_to_datetime)
+    listings['mileage'] = listings['mileage'].apply(lambda x: remove_suffix(x, 'km'))
+    listings['engine_capacity'] = listings['engine_capacity'].apply(lambda x: remove_suffix(x, 'cc'))
     return listings
 
 
@@ -21,3 +23,13 @@ def convert_to_datetime(posted_string):
     posted_string_with_year = posted_string.replace("Posted on ", f"{current_year} ")
     date_time = datetime.strptime(posted_string_with_year, date_format)
     return date_time.strftime("%Y-%m-%d")
+
+
+def remove_suffix(string, suffix):
+    """
+    Check if the string ends with the specified suffix
+    """
+    if string.endswith(suffix):
+        # Remove the suffix from the string
+        string = string[:-len(suffix)].strip()
+    return string
